@@ -249,18 +249,18 @@ class Profile_Widget extends WP_Widget {
 		/* Display the widget title if one was input (before and after defined by themes). */
 		if ( $title )
 			echo $before_title . $title . $after_title;
-		$bulletin_query = new WP_Query(array(
+		$profile_widget_query = new WP_Query(array(
 					'post_type' => 'profile',
 					'profiletype' => $category_choice,
 					'orderby' => 'rand',
 					'posts_per_page' => 1));
 					
-		if ( $bulletin_query->have_posts() ) :  while ($bulletin_query->have_posts()) : $bulletin_query->the_post(); global $post;?>
+		if ( $profile_widget_query->have_posts() ) :  while ($profile_widget_query->have_posts()) : $profile_widget_query->the_post(); global $post;?>
 				<article class="row">
 					<div class="twelve columns">
 						<a href="<?php the_permalink(); ?>">
-							<p><b><?php the_title(); ?></b></br>
-							<?php if (get_post_meta($post->ID, 'ecpt_pull_quote', true)) { echo get_post_meta($post->ID, 'ecpt_pull_quote', true); }  ?></p>
+							<?php  if ( has_post_thumbnail()) { the_post_thumbnail('directory', array('class'	=> "floatleft")); }
+							if (get_post_meta($post->ID, 'ecpt_pull_quote', true)) { echo get_post_meta($post->ID, 'ecpt_pull_quote', true); }  ?>
 						</a>
 					</div>
 				</article>
