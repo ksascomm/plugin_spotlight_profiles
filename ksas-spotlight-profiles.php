@@ -2,8 +2,8 @@
 /*
 Plugin Name: KSAS Student/Faculty Profiles and Spotlights
 Plugin URI: http://krieger2.jhu.edu/comm/web/plugins/profiles
-Description: Creates a custom post type for profiles/spotlights. This plugin also creates widgets to display different profile types in the sidebar. Please remember to designate the profile type in order for the profiles to display properly.
-Version: 1.0
+Description: Creates a custom post type for profiles.  Link to http://siteurl/profiles/*profiketype-slug* to display profile archive.  Plugin also creates a widget to display a random profile by type in the sidebar. Widget displays thumbnail and pull quote. If no pull quote exists it displays the excerpt.
+Version: 2.0
 Author: Cara Peckens
 Author URI: mailto:cpeckens@jhu.edu
 License: GPL2
@@ -27,7 +27,7 @@ License: GPL2
 		
 		$taxonomies = array('category', 'affiliation');
 		
-		$supports = array('title','editor','revisions', 'thumbnail');
+		$supports = array('title','editor','revisions', 'thumbnail', 'excerpt');
 		
 		$post_type_args = array(
 			'labels' 			=> $labels,
@@ -93,8 +93,6 @@ function add_profiletype_terms() {
 	wp_insert_term('undergraduate', 'profiletype',  array('description'=> 'Undergraduate Student Profile','slug' => 'undergraduate-profile'));
 	wp_insert_term('graduate', 'profiletype',  array('description'=> 'Graduate Student Profile','slug' => 'graduate-profile'));
 	wp_insert_term('spotlight', 'profiletype',  array('description'=> 'Faculty or Spotlight Feature','slug' => 'spotlight'));
-	wp_insert_term('faculty', 'profiletype',  array('description'=> 'Faculty or Spotlight Feature','slug' => 'faculty-profile'));
-	wp_insert_term('research', 'profiletype',  array('description'=> 'Faculty or Spotlight Feature','slug' => 'research-profile'));
 }
 add_action('init', 'add_profiletype_terms');
 
@@ -259,12 +257,17 @@ class Profile_Widget extends WP_Widget {
 				<article class="row">
 					<div class="twelve columns">
 						<a href="<?php the_permalink(); ?>">
-							<?php  if ( has_post_thumbnail()) { the_post_thumbnail('directory', array('class'	=> "floatleft")); }
-							if (get_post_meta($post->ID, 'ecpt_pull_quote', true)) { echo get_post_meta($post->ID, 'ecpt_pull_quote', true); }  ?>
+							<?php  if ( has_post_thumbnail()) { the_post_thumbnail('directory', array('class' => "floatleft")); } ?>
+							<p><b><?php the_title(); ?></b><br><?php if(get_post_meta($post->ID, 'ecpt_pull_quote', true)) { echo get_post_meta($post->ID, 'ecpt_pull_quote', true); } else { echo get_the_excerpt(); } ?></p>
 						</a>
 					</div>
 				</article>
-		<?php endwhile; endif; echo $after_widget;
+	<?php endwhile; ?>
+		<article>
+			<p align="right"><a href="<?php echo home_url('/profiletype/'); echo $category_choice;?>">View more<span class="icon-arrow-right"></span></a></p>
+		</article>
+	<?php endif; ?>
+ <?php echo $after_widget;
 	}
 
 	/* Update/Save the widget settings. */
@@ -312,5 +315,109 @@ class Profile_Widget extends WP_Widget {
 	<?php
 	}
 }
+//CREATE COLUMNS IN ADMIN
 
+add_filter( 'manage_edit-profile_columns', 'my_profile_columns' ) ;
+
+function my_profile_columns( $columns ) {
+
+	$columns = array(
+		'cb' => '<input type="checkbox" />',
+		'title' => __( 'Name' ),
+		'type' => __( 'Type' ),
+		'quote' => __('Excerpt'),
+		'thumbnail' => __('Thumbnail'),
+		'date' => __( 'Date' ),
+		
+	);
+
+	return $columns;
+}
+
+add_action( 'manage_profile_posts_custom_column', 'my_manage_profile_columns', 10, 2 );
+
+function my_manage_profile_columns( $column, $post_id ) {
+	global $post;
+
+	switch( $column ) {
+
+		/* If displaying the 'role' column. */
+		case 'type' :
+
+			/* Get the roles for the post. */
+			$terms = get_the_terms( $post_id, 'profiletype' );
+
+			/* If terms were found. */
+			if ( !empty( $terms ) ) {
+
+				$out = array();
+
+				/* Loop through each term, linking to the 'edit posts' page for the specific term. */
+				foreach ( $terms as $term ) {
+					$out[] = sprintf( '<a href="%s">%s</a>',
+						esc_url( add_query_arg( array( 'post_type' => $post->post_type, 'role' => $term->slug ), 'edit.php' ) ),
+						esc_html( sanitize_term_field( 'name', $term->name, $term->term_id, 'role', 'display' ) )
+					);
+				}
+
+				/* Join the terms, separating them with a comma. */
+				echo join( ', ', $out );
+			}
+
+			/* If no terms were found, output a default message. */
+			else {
+				_e( 'No Type Assigned' );
+			}
+
+			break;
+		case 'quote' :
+			if (get_post_meta($post->ID, 'ecpt_pull_quote', true)) {
+					echo get_post_meta($post->ID, 'ecpt_pull_quote', true);
+			} else {
+				the_excerpt();
+			}
+		break;
+		case 'thumbnail' :
+			if ( has_post_thumbnail()) { 
+				the_post_thumbnail('directory');
+			} else {
+				echo __( 'No Photo' );
+			}
+			break;
+		/* Just break out of the switch statement for everything else. */
+		default :
+			break;
+	}
+}
+
+// CREATE FILTERS WITH CUSTOM TAXONOMIES
+
+
+function profile_add_taxonomy_filters() {
+	global $typenow;
+
+	// An array of all the taxonomyies you want to display. Use the taxonomy name or slug
+	$taxonomies = array('profiletype', 'filter');
+ 
+	// must set this to the post type you want the filter(s) displayed on
+	if ( $typenow == 'profile' ) {
+ 
+		foreach ( $taxonomies as $tax_slug ) {
+			$current_tax_slug = isset( $_GET[$tax_slug] ) ? $_GET[$tax_slug] : false;
+			$tax_obj = get_taxonomy( $tax_slug );
+			$tax_name = $tax_obj->labels->name;
+			$terms = get_terms($tax_slug);
+			if ( count( $terms ) > 0) {
+				echo "<select name='$tax_slug' id='$tax_slug' class='postform'>";
+				echo "<option value=''>$tax_name</option>";
+				foreach ( $terms as $term ) {
+					echo '<option value=' . $term->slug, $current_tax_slug == $term->slug ? ' selected="selected"' : '','>' . $term->name .' (' . $term->count .')</option>';
+				}
+				echo "</select>";
+			}
+		}
+	}
+}
+
+add_action( 'restrict_manage_posts', 'profile_add_taxonomy_filters' );
 ?>
