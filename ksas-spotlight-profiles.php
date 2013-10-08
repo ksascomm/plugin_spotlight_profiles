@@ -316,6 +316,10 @@ class Profile_Widget extends WP_Widget {
 	}
 }
 //CREATE COLUMNS IN ADMIN
+include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
+if (is_plugin_active('ksas-research-meta/ksas-research-meta.php')) {
+      //plugin is activated
+   } else {
 
 add_filter( 'manage_edit-profile_columns', 'my_profile_columns' ) ;
 
@@ -420,4 +424,6 @@ function profile_add_taxonomy_filters() {
 }
 
 add_action( 'restrict_manage_posts', 'profile_add_taxonomy_filters' );
+
+}
 ?>
