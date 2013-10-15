@@ -242,16 +242,29 @@ class Profile_Widget extends WP_Widget {
 		/* Our variables from the widget settings. */
 		$title = apply_filters('widget_title', $instance['title'] );
 		$category_choice = $instance['category_choice'];
+		$random = $instance['random'];
+		$age = $instance['age'];
 		echo $before_widget;
 
 		/* Display the widget title if one was input (before and after defined by themes). */
 		if ( $title )
 			echo $before_title . $title . $after_title;
+		// Create a new filtering function that will add our where clause to the query
+		
+		function filter_where( $where = '' ) {
+		    // posts in the last 30 days
+		    $length = '-' . $age . ' days';
+		    $where .= " AND post_date > '" . date('Y-m-d', strtotime($length)) . "'";
+		    return $where;
+		}
+		
+		add_filter( 'posts_where', 'filter_where' );
 		$profile_widget_query = new WP_Query(array(
 					'post_type' => 'profile',
 					'profiletype' => $category_choice,
-					'orderby' => 'rand',
+					'orderby' => $random,
 					'posts_per_page' => 1));
+		remove_filter( 'posts_where', 'filter_where' );
 					
 		if ( $profile_widget_query->have_posts() ) :  while ($profile_widget_query->have_posts()) : $profile_widget_query->the_post(); global $post;?>
 				<article class="row">
@@ -277,6 +290,8 @@ class Profile_Widget extends WP_Widget {
 		/* Strip tags for title and name to remove HTML (important for text inputs). */
 		$instance['title'] = strip_tags( $new_instance['title'] );
 		$instance['category_choice'] = $new_instance['category_choice'];
+		$instance['random'] = strip_tags($new_instance['random']);
+		$instance['age'] = strip_tags($new_instance['age']);
 
 		return $instance;
 	}
@@ -285,7 +300,7 @@ class Profile_Widget extends WP_Widget {
 	function form( $instance ) {
 
 		/* Set up some default widget settings. */
-		$defaults = array( 'title' => __('Spotlight', 'ksas_profile'), 'quantity' => __('3', 'ksas_profile'), 'category_choice' => '1' );
+		$defaults = array( 'title' => __('Spotlight', 'ksas_profile'), 'category_choice' => '1', 'random' => 'rand', 'age' => '360' );
 		$instance = wp_parse_args( (array) $instance, $defaults ); ?>
 
 		<!-- Widget Title: Text Input -->
@@ -293,7 +308,6 @@ class Profile_Widget extends WP_Widget {
 			<label for="<?php echo $this->get_field_id( 'title' ); ?>"><?php _e('Title:', 'hybrid'); ?></label>
 			<input id="<?php echo $this->get_field_id( 'title' ); ?>" name="<?php echo $this->get_field_name( 'title' ); ?>" value="<?php echo $instance['title']; ?>" style="width:100%;" />
 		</p>
-
 
 		<!-- Choose Profile Type: Select Box -->
 		<p>
@@ -312,6 +326,19 @@ class Profile_Widget extends WP_Widget {
 		    <?php } ?>
 			</select>
 		</p>
+		<p>
+			<label for="<?php echo $this->get_field_id( 'age' ); ?>"><?php _e('Max age in days:', 'ksas_profile'); ?></label>
+			<input id="<?php echo $this->get_field_id( 'age' ); ?>" name="<?php echo $this->get_field_name( 'age' ); ?>" value="<?php echo $instance['age']; ?>" style="width:100%;" />
+		</p>
+		
+		<p>
+			<label for="<?php echo $this->get_field_id( 'random' ); ?>"><?php _e('Order Type', 'ksas_profile'); ?></label>
+			<select id="<?php echo $this->get_field_id( 'random' ); ?>" name="<?php echo $this->get_field_name( 'random' ); ?>" class="widefat" style="width:100%;">
+			<option value="date" <?php if ( 'date' === $instance['random'] ) echo 'selected="selected"'; ?>>Latest Only</option>
+			<option value="rand" <?php if ( 'rand' === $instance['random'] ) echo 'selected="selected"'; ?>>Random</option>
+			</select>
+		</p>
+
 	<?php
 	}
 }
