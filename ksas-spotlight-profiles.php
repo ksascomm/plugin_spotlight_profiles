@@ -234,7 +234,6 @@ class Profile_Widget extends WP_Widget {
 		$control_options = array( 'width' => 300, 'height' => 350, 'id_base' => 'ksas_profile-widget' );
 		$this->WP_Widget( 'ksas_profile-widget', __('Profile/Spotlight', 'ksas_profile'), $widget_options, $control_options );
 	}
-
 	/* Widget Display */
 	function widget( $args, $instance ) {
 		extract( $args );
@@ -251,22 +250,14 @@ class Profile_Widget extends WP_Widget {
 			echo $before_title . $title . $after_title;
 		// Create a new filtering function that will add our where clause to the query
 		
-		function filter_where( $where = '' ) {
-		    // posts in the last 30 days
-		    $length = '-' . $age . ' days';
-		    $where .= " AND post_date > '" . date('Y-m-d', strtotime($length)) . "'";
-		    return $where;
-		}
-		
-		add_filter( 'posts_where', 'filter_where' );
 		$profile_widget_query = new WP_Query(array(
 					'post_type' => 'profile',
 					'profiletype' => $category_choice,
 					'orderby' => $random,
+					'year' => $age,
 					'posts_per_page' => 1));
-		remove_filter( 'posts_where', 'filter_where' );
 					
-		if ( $profile_widget_query->have_posts() ) :  while ($profile_widget_query->have_posts()) : $profile_widget_query->the_post(); global $post;?>
+		if ( $profile_widget_query->have_posts() ) :  while ($profile_widget_query->have_posts()) : $profile_widget_query->the_post(); ?>
 				<article class="row">
 					<div class="twelve columns">
 						<a href="<?php the_permalink(); ?>">
@@ -300,7 +291,7 @@ class Profile_Widget extends WP_Widget {
 	function form( $instance ) {
 
 		/* Set up some default widget settings. */
-		$defaults = array( 'title' => __('Spotlight', 'ksas_profile'), 'category_choice' => '1', 'random' => 'rand', 'age' => '360' );
+		$defaults = array( 'title' => __('Spotlight', 'ksas_profile'), 'category_choice' => '1', 'random' => 'rand', 'age' => '' );
 		$instance = wp_parse_args( (array) $instance, $defaults ); ?>
 
 		<!-- Widget Title: Text Input -->
@@ -327,7 +318,7 @@ class Profile_Widget extends WP_Widget {
 			</select>
 		</p>
 		<p>
-			<label for="<?php echo $this->get_field_id( 'age' ); ?>"><?php _e('Max age in days:', 'ksas_profile'); ?></label>
+			<label for="<?php echo $this->get_field_id( 'age' ); ?>"><?php _e('Limit by publish year (leave blank if you don not want to limit):', 'ksas_profile'); ?></label>
 			<input id="<?php echo $this->get_field_id( 'age' ); ?>" name="<?php echo $this->get_field_name( 'age' ); ?>" value="<?php echo $instance['age']; ?>" style="width:100%;" />
 		</p>
 		
