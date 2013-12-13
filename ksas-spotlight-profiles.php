@@ -89,13 +89,34 @@ function register_profiletype_tax() {
 }
 add_action('init', 'register_profiletype_tax');								
 
-function add_profiletype_terms() {
-	wp_insert_term('undergraduate', 'profiletype',  array('description'=> 'Undergraduate Student Profile','slug' => 'undergraduate-profile'));
-	wp_insert_term('graduate', 'profiletype',  array('description'=> 'Graduate Student Profile','slug' => 'graduate-profile'));
-	wp_insert_term('spotlight', 'profiletype',  array('description'=> 'Faculty or Spotlight Feature','slug' => 'spotlight'));
+function check_profiletype_terms(){
+ 
+        // see if we already have populated any terms
+    $term = get_terms( 'profiletype', array( 'hide_empty' => false ) );
+ 
+    // if no terms then lets add our terms
+    if( empty( $term ) ){
+        $terms = define_profiletype_terms();
+        foreach( $terms as $term ){
+            if( !term_exists( $term['name'], 'profiletype' ) ){
+                wp_insert_term( $term['name'], 'profiletype', array( 'slug' => $term['slug'] ) );
+            }
+        }
+    }
 }
-add_action('init', 'add_profiletype_terms');
 
+add_action( 'init', 'check_profiletype_terms' );
+
+function define_profiletype_terms(){
+ 
+$terms = array(
+		'0' => array( 'name' => 'undergraduate','slug' => 'undergraduate-profile'),
+		'1' => array( 'name' => 'graduate','slug' => 'graduate-profile'),
+		'2' => array( 'name' => 'spotlight','slug' => 'spotlight'),
+		);
+ 
+    return $terms;
+}
 //Add pull quote box
 $pullquote_7_metabox = array( 
 	'id' => 'pullquote',
