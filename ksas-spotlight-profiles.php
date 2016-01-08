@@ -253,7 +253,7 @@ class Profile_Widget extends WP_Widget {
 	function Profile_Widget() {
 		$widget_options = array( 'classname' => 'ksas_profile', 'description' => __('Displays a random profile', 'ksas_profile') );
 		$control_options = array( 'width' => 300, 'height' => 350, 'id_base' => 'ksas_profile-widget' );
-		$this->WP_Widget( 'ksas_profile-widget', __('Profile/Spotlight', 'ksas_profile'), $widget_options, $control_options );
+		parent::__construct( 'ksas_profile-widget', __('Profile/Spotlight', 'ksas_profile'), $widget_options, $control_options );
 	}
 	/* Widget Display */
 	function widget( $args, $instance ) {
