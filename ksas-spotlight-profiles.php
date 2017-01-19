@@ -270,7 +270,7 @@ class Profile_Widget extends WP_Widget {
 		if ( $title )
 			echo $before_title . $title . $after_title;
 		// Create a new filtering function that will add our where clause to the query
-		
+		global $post;
 		$profile_widget_query = new WP_Query(array(
 					'post_type' => 'profile',
 					'profiletype' => $category_choice,
@@ -279,17 +279,16 @@ class Profile_Widget extends WP_Widget {
 					'posts_per_page' => 1));
 					
 		if ( $profile_widget_query->have_posts() ) :  while ($profile_widget_query->have_posts()) : $profile_widget_query->the_post(); ?>
-				<article class="row">
-					<div class="twelve columns">
-						<a href="<?php the_permalink(); ?>">
-							<?php  if ( has_post_thumbnail()) { the_post_thumbnail('directory', array('class' => "floatleft")); } ?>
-							<p><b><?php the_title(); ?></b><br><?php if(get_post_meta($post->ID, 'ecpt_pull_quote', true)) { echo get_post_meta($post->ID, 'ecpt_pull_quote', true); } else { echo get_the_excerpt(); } ?></p>
-						</a>
+				<article class="row" aria-labelledby="post-<?php the_ID(); ?>" >	
+					<div class="small-12 columns">
+						<?php if ( has_post_thumbnail()) { the_post_thumbnail('directory', array('class' => "floatleft")); } ?>
+						<h5><a href="<?php the_permalink(); ?>" id="post-<?php the_ID(); ?>" ><?php the_title(); ?></a></h5>
+						<p><?php if(get_post_meta($post->ID, 'ecpt_pull_quote', true)) { echo get_post_meta($post->ID, 'ecpt_pull_quote', true); } else { echo get_the_excerpt(); } ?></p>
 					</div>
 				</article>
 	<?php endwhile; ?>
-		<article>
-			<p align="right"><a href="<?php echo home_url('/profiletype/'); echo $category_choice;?>">View more<span class="icon-arrow-right"></span></a></p>
+		<article aria-label="spotlight archives">
+			<p><a href="<?php echo home_url('/profiletype/'); echo $category_choice;?>">View more Spotlight Profiles <span class="fa fa-chevron-circle-right" aria-hidden="true"></span></a></p>
 		</article>
 	<?php endif; ?>
  <?php echo $after_widget;
