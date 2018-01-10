@@ -283,7 +283,7 @@ class Profile_Widget extends WP_Widget {
 					<div class="small-12 columns">
 						<?php if ( has_post_thumbnail()) { the_post_thumbnail('directory', array('class' => "floatleft")); } ?>
 						<h5><a href="<?php the_permalink(); ?>" id="post-<?php the_ID(); ?>" ><?php the_title(); ?></a></h5>
-						<p><?php if(get_post_meta($post->ID, 'ecpt_pull_quote', true)) { echo get_post_meta($post->ID, 'ecpt_pull_quote', true); } else { echo get_the_excerpt(); } ?></p>
+						<p><?php if(get_post_meta($post->ID, 'ecpt_pull_quote', true)) { echo get_post_meta($post->ID, 'ecpt_pull_quote', true); } else { echo wp_trim_words( get_the_excerpt(), 35, '...' ); } ?></p>
 					</div>
 				</article>
 	<?php endwhile; ?>
