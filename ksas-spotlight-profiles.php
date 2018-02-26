@@ -281,14 +281,14 @@ class Profile_Widget extends WP_Widget {
 		if ( $profile_widget_query->have_posts() ) :  while ($profile_widget_query->have_posts()) : $profile_widget_query->the_post(); ?>
 				<article class="row" aria-labelledby="post-<?php the_ID(); ?>" >	
 					<div class="small-12 columns">
-						<?php if ( has_post_thumbnail()) { the_post_thumbnail('directory', array('class' => "floatleft")); } ?>
-						<h5><a href="<?php the_permalink(); ?>" id="post-<?php the_ID(); ?>" ><?php the_title(); ?></a></h5>
-						<p><?php if(get_post_meta($post->ID, 'ecpt_pull_quote', true)) { echo get_post_meta($post->ID, 'ecpt_pull_quote', true); } else { echo wp_trim_words( get_the_excerpt(), 35, '...' ); } ?></p>
+						<?php if ( has_post_thumbnail()) { the_post_thumbnail('directory', array('class' => "floatleft", 'alt' => get_the_title())); } ?>
+						<h5 class="spotlight-profile-title"><a href="<?php the_permalink(); ?>" id="post-<?php the_ID(); ?>" ><?php the_title(); ?><span class="link"></span></a></h5>
+						<p class="spotlight-profile-content"><?php if(get_post_meta($post->ID, 'ecpt_pull_quote', true)) { echo get_post_meta($post->ID, 'ecpt_pull_quote', true); } else { echo wp_trim_words( get_the_excerpt(), 35, '...' ); } ?></p>
 					</div>
 				</article>
 	<?php endwhile; ?>
 		<article aria-label="spotlight archives">
-			<p><a href="<?php echo home_url('/profiletype/'); echo $category_choice;?>">View more Spotlight Profiles <span class="fa fa-chevron-circle-right" aria-hidden="true"></span></a></p>
+			<p class="view-more-link"><a href="<?php echo home_url('/profiletype/'); echo $category_choice;?>">View more Spotlight Profiles <span class="fa fa-chevron-circle-right" aria-hidden="true"></span></a></p>
 		</article>
 	<?php endif; ?>
  <?php echo $after_widget;
