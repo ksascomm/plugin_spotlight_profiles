@@ -89,16 +89,16 @@ function register_profiletype_tax() {
 }
 add_action('init', 'register_profiletype_tax');								
 
-function check_profiletype_terms(){
+function check_profiletype_terms() {
  
-        // see if we already have populated any terms
+    // see if we already have populated any terms
     $term = get_terms( 'profiletype', array( 'hide_empty' => false ) );
  
     // if no terms then lets add our terms
     if( empty( $term ) ){
         $terms = define_profiletype_terms();
         foreach( $terms as $term ){
-            if( !term_exists( $term['name'], 'profiletype' ) ){
+            if( !term_exists( $term['name'], 'profiletype' ) ) {
                 wp_insert_term( $term['name'], 'profiletype', array( 'slug' => $term['slug'] ) );
             }
         }
@@ -107,16 +107,17 @@ function check_profiletype_terms(){
 
 add_action( 'init', 'check_profiletype_terms' );
 
-function define_profiletype_terms(){
+function define_profiletype_terms() {
  
 $terms = array(
-		'0' => array( 'name' => 'undergraduate','slug' => 'undergraduate-profile'),
-		'1' => array( 'name' => 'graduate','slug' => 'graduate-profile'),
-		'2' => array( 'name' => 'spotlight','slug' => 'spotlight'),
-		);
+        '0' => array( 'name' => 'undergraduate','slug' => 'undergraduate-profile'),
+        '1' => array( 'name' => 'graduate','slug' => 'graduate-profile'),
+        '2' => array( 'name' => 'spotlight','slug' => 'spotlight'),
+        );
  
     return $terms;
 }
+
 //Add pull quote box
 $pullquote_7_metabox = array( 
 	'id' => 'pullquote',
@@ -124,20 +125,18 @@ $pullquote_7_metabox = array(
 	'page' => array('profile'),
 	'context' => 'normal',
 	'priority' => 'default',
-	'fields' => array(
-
-				
-				array(
-					'name' 			=> 'Pull Quote or Research Topic',
-					'desc' 			=> 'This is the text shown on profile index page, widgets and homepage sliders',
-					'id' 			=> 'ecpt_pull_quote',
-					'class' 		=> 'ecpt_pull_quote',
-					'type' 			=> 'textarea',
-					'rich_editor' 	=> 1,			
-					'max' 			=> 0,
-					'std'			=> ''													
-				),
-												)
+	'fields' => array(				
+		array(
+			'name' 			=> 'Pull Quote or Research Topic',
+			'desc' 			=> 'This is the text shown on profile index page, widgets and homepage sliders',
+			'id' 			=> 'ecpt_pull_quote',
+			'class' 		=> 'ecpt_pull_quote',
+			'type' 			=> 'textarea',
+			'rich_editor' 	=> 1,			
+			'max' 			=> 0,
+			'std'			=> ''													
+		),
+	)
 );			
 			
 add_action('admin_menu', 'ecpt_add_pullquote_7_meta_box');
