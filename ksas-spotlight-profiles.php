@@ -244,115 +244,6 @@ function ecpt_pullquote_7_save($post_id) {
 	}
 }
 
-//register widgets
-add_action('widgets_init', 'ksas_register_profile_widgets');
-	function ksas_register_profile_widgets() {
-		register_widget('Profile_Widget');
-	}
-class Profile_Widget extends WP_Widget {
-	function Profile_Widget() {
-		$widget_options = array( 'classname' => 'ksas_profile', 'description' => __('Displays a random profile', 'ksas_profile') );
-		$control_options = array( 'width' => 300, 'height' => 350, 'id_base' => 'ksas_profile-widget' );
-		parent::__construct( 'ksas_profile-widget', __('Profile/Spotlight', 'ksas_profile'), $widget_options, $control_options );
-	}
-	/* Widget Display */
-	function widget( $args, $instance ) {
-		extract( $args );
-
-		/* Our variables from the widget settings. */
-		$title = apply_filters('widget_title', $instance['title'] );
-		$category_choice = $instance['category_choice'];
-		$random = $instance['random'];
-		$age = $instance['age'];
-		echo $before_widget;
-
-		/* Display the widget title if one was input (before and after defined by themes). */
-		if ( $title )
-			echo $before_title . $title . $after_title;
-		// Create a new filtering function that will add our where clause to the query
-		global $post;
-		$profile_widget_query = new WP_Query(array(
-					'post_type' => 'profile',
-					'profiletype' => $category_choice,
-					'orderby' => $random,
-					'year' => $age,
-					'posts_per_page' => 1));
-					
-		if ( $profile_widget_query->have_posts() ) :  while ($profile_widget_query->have_posts()) : $profile_widget_query->the_post(); ?>
-				<article class="row" aria-labelledby="post-<?php the_ID(); ?>" >	
-					<div class="small-12 columns">
-						<?php if ( has_post_thumbnail()) { the_post_thumbnail('directory', array('class' => "floatleft", 'alt' => get_the_title())); } ?>
-						<h5 class="spotlight-profile-title"><a href="<?php the_permalink(); ?>" id="post-<?php the_ID(); ?>" ><?php the_title(); ?><span class="link"></span></a></h5>
-						<p class="spotlight-profile-content"><?php if(get_post_meta($post->ID, 'ecpt_pull_quote', true)) { echo get_post_meta($post->ID, 'ecpt_pull_quote', true); } else { echo wp_trim_words( get_the_excerpt(), 35, '...' ); } ?></p>
-					</div>
-				</article>
-	<?php endwhile; ?>
-		<article aria-label="spotlight archives">
-			<p class="view-more-link"><a href="<?php echo home_url('/profiletype/'); echo $category_choice;?>">View more Spotlight Profiles <span class="fa fa-chevron-circle-right" aria-hidden="true"></span></a></p>
-		</article>
-	<?php endif; ?>
- <?php echo $after_widget;
-	}
-
-	/* Update/Save the widget settings. */
-	function update( $new_instance, $old_instance ) {
-		$instance = $old_instance;
-
-		/* Strip tags for title and name to remove HTML (important for text inputs). */
-		$instance['title'] = strip_tags( $new_instance['title'] );
-		$instance['category_choice'] = $new_instance['category_choice'];
-		$instance['random'] = strip_tags($new_instance['random']);
-		$instance['age'] = strip_tags($new_instance['age']);
-
-		return $instance;
-	}
-
-	/* Widget Options */
-	function form( $instance ) {
-
-		/* Set up some default widget settings. */
-		$defaults = array( 'title' => __('Spotlight', 'ksas_profile'), 'category_choice' => '1', 'random' => 'rand', 'age' => '' );
-		$instance = wp_parse_args( (array) $instance, $defaults ); ?>
-
-		<!-- Widget Title: Text Input -->
-		<p>
-			<label for="<?php echo $this->get_field_id( 'title' ); ?>"><?php _e('Title:', 'hybrid'); ?></label>
-			<input id="<?php echo $this->get_field_id( 'title' ); ?>" name="<?php echo $this->get_field_name( 'title' ); ?>" value="<?php echo $instance['title']; ?>" style="width:100%;" />
-		</p>
-
-		<!-- Choose Profile Type: Select Box -->
-		<p>
-			<label for="<?php echo $this->get_field_id( 'category_choice' ); ?>"><?php _e('Choose Profile Type:', 'ksas_profile'); ?></label> 
-			<select id="<?php echo $this->get_field_id( 'category_choice' ); ?>" name="<?php echo $this->get_field_name( 'category_choice' ); ?>" class="widefat" style="width:100%;">
-			<?php global $wpdb;
-				$categories = get_categories(array(
-								'orderby'                  => 'name',
-								'order'                    => 'ASC',
-								'hide_empty'               => 1,
-								'taxonomy' => 'profiletype'));
-		    foreach($categories as $category){
-		    	$category_choice = $category->slug;
-		        $category_title = $category->name; ?>
-		       <option value="<?php echo $category_choice; ?>" <?php if ( $category_choice == $instance['category_choice'] ) echo 'selected="selected"'; ?>><?php echo $category_title; ?></option>
-		    <?php } ?>
-			</select>
-		</p>
-		<p>
-			<label for="<?php echo $this->get_field_id( 'age' ); ?>"><?php _e('Limit by publish year (leave blank if you don not want to limit):', 'ksas_profile'); ?></label>
-			<input id="<?php echo $this->get_field_id( 'age' ); ?>" name="<?php echo $this->get_field_name( 'age' ); ?>" value="<?php echo $instance['age']; ?>" style="width:100%;" />
-		</p>
-		
-		<p>
-			<label for="<?php echo $this->get_field_id( 'random' ); ?>"><?php _e('Order Type', 'ksas_profile'); ?></label>
-			<select id="<?php echo $this->get_field_id( 'random' ); ?>" name="<?php echo $this->get_field_name( 'random' ); ?>" class="widefat" style="width:100%;">
-			<option value="date" <?php if ( 'date' === $instance['random'] ) echo 'selected="selected"'; ?>>Latest Only</option>
-			<option value="rand" <?php if ( 'rand' === $instance['random'] ) echo 'selected="selected"'; ?>>Random</option>
-			</select>
-		</p>
-
-	<?php
-	}
-}
 //CREATE COLUMNS IN ADMIN
 include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
 if (is_plugin_active('ksas-research-meta/ksas-research-meta.php')) {
@@ -464,4 +355,120 @@ function profile_add_taxonomy_filters() {
 add_action( 'restrict_manage_posts', 'profile_add_taxonomy_filters' );
 
 }
+
+
+/*************Profile Widget*****************/
+class Profile_Widget extends WP_Widget {
+	public function __construct() {
+		$widget_options = array( 'classname' => 'ksas_profile', 'description' => __('Displays a random profile', 'ksas_profile') );
+		$control_options = array( 'width' => 300, 'height' => 350, 'id_base' => 'ksas_profile-widget' );
+		parent::__construct( 'ksas_profile-widget', __('Profile/Spotlight', 'ksas_profile'), $widget_options, $control_options );
+	}
+
+	/* Update/Save the widget settings. */
+	public function update( $new_instance, $old_instance ) {
+		$instance = $old_instance;
+
+		/* Strip tags for title and name to remove HTML (important for text inputs). */
+		$instance['title']	= isset( $new_instance['title'] ) ? wp_strip_all_tags( $new_instance['title'] ) : '';
+		$instance['category_choice']   = isset( $new_instance['category_choice'] ) ? wp_strip_all_tags( $new_instance['category_choice'] ) : '';
+		$instance['random']	= isset( $new_instance['random'] ) ? wp_strip_all_tags( $new_instance['random'] ) : '';
+		$instance['age']	= isset( $new_instance['age'] ) ? wp_strip_all_tags( $new_instance['age'] ) : '';
+
+		return $instance;
+	}
+
+	/* Widget Options */
+	public function form( $instance ) {
+
+		/* Set up some default widget settings. */
+		$defaults = array( 'title' => __('Spotlight', 'ksas_profile'), 'category_choice' => '1', 'random' => 'rand', 'age' => '' );
+		$instance = wp_parse_args( (array) $instance, $defaults ); ?>
+
+		<!-- Widget Title: Text Input -->
+		<p>
+			<label for="<?php echo esc_attr( $this->get_field_id( 'title' ) ); ?>"><?php _e('Title:', 'hybrid'); ?></label>
+			<input id="<?php echo esc_attr( $this->get_field_id( 'title' ) ); ?>" name="<?php echo $this->get_field_name( 'title' ); ?>" value="<?php echo $instance['title']; ?>" style="width:100%;" />
+		</p>
+
+		<!-- Choose Profile Type: Select Box -->
+		<p>
+			<label for="<?php echo esc_attr( $this->get_field_id( 'category_choice' ) ); ?>"><?php _e('Choose Testimonial Type:', 'ksas_testimonial'); ?></label> 
+			<select id="<?php echo esc_attr( $this->get_field_id( 'category_choice' ) ); ?>" name="<?php echo esc_attr($this->get_field_name( 'category_choice' )); ?>" class="widefat" style="width:100%;">
+			<?php global $wpdb;
+				$categories = get_categories(array(
+								'orderby'                  => 'name',
+								'order'                    => 'ASC',
+								'hide_empty'               => 1,
+								'taxonomy' => 'profiletype'));
+		    foreach($categories as $category){
+		    	$category_choice = $category->slug;
+		        $category_title = $category->name; ?>
+		       <option value="<?php echo $category_choice; ?>" <?php if ( $category_choice == $instance['category_choice'] ) echo 'selected="selected"'; ?>><?php echo $category_title; ?></option>
+		    <?php } ?>
+			</select>
+		</p>
+		<p>
+			<label for="<?php echo $this->get_field_id( 'age' ); ?>"><?php _e('Limit by publish year (leave blank if you don not want to limit):', 'ksas_profile'); ?></label>
+			<input id="<?php echo $this->get_field_id( 'age' ); ?>" name="<?php echo $this->get_field_name( 'age' ); ?>" value="<?php echo $instance['age']; ?>" style="width:100%;" />
+		</p>
+		
+		<p>
+			<label for="<?php echo esc_attr ( $this->get_field_id( 'random' ) ); ?>"><?php _e('Order (Latest or Random)', 'ksas_testimonial'); ?></label>
+			<select id="<?php echo esc_attr ( $this->get_field_id( 'random' ) ); ?>" name="<?php echo esc_attr( $this->get_field_name( 'random' ) ); ?>" class="widefat" style="width:100%;">
+			<option value="date" <?php if ( 'date' === $instance['random'] ) echo 'selected="selected"'; ?>>Latest Only</option>
+			<option value="rand" <?php if ( 'rand' === $instance['random'] ) echo 'selected="selected"'; ?>>Random</option>
+			</select>
+		</p>
+
+	<?php
+	}
+
+	/* Widget Display */
+	public function widget( $args, $instance ) {
+		extract( $args );
+
+		/* Our variables from the widget settings. */
+		$title    = isset( $instance['title'] ) ? apply_filters( 'widget_title', $instance['title'] ) : '';
+		$category_choice = isset( $instance['category_choice'] ) ? $instance['category_choice'] : '';
+		$random = isset( $instance['random'] ) ? $instance['random'] : '';
+		$age = isset( $instance['age'] ) ? $instance['age'] : '';
+		echo $before_widget;
+
+		/* Display the widget title if one was input (before and after defined by themes). */
+		if ( $title )
+			echo $before_title . $title . $after_title;
+		// Create a new filtering function that will add our where clause to the query
+		global $post;
+		$profile_widget_query = new WP_Query(array(
+					'post_type' => 'profile',
+					'profiletype' => $category_choice,
+					'orderby' => $random,
+					'year' => $age,
+					'posts_per_page' => 1));
+					
+		if ( $profile_widget_query->have_posts() ) :  while ($profile_widget_query->have_posts()) : $profile_widget_query->the_post(); ?>
+				<article class="row" aria-labelledby="post-<?php the_ID(); ?>" >	
+					<div class="small-12 columns">
+						<?php if ( has_post_thumbnail()) { the_post_thumbnail('directory', array('class' => "floatleft", 'alt' => get_the_title())); } ?>
+						<h5 class="spotlight-profile-title"><a href="<?php the_permalink(); ?>" id="post-<?php the_ID(); ?>" ><?php the_title(); ?><span class="link"></span></a></h5>
+						<p class="spotlight-profile-content"><?php if(get_post_meta($post->ID, 'ecpt_pull_quote', true)) { echo get_post_meta($post->ID, 'ecpt_pull_quote', true); } else { echo wp_trim_words( get_the_excerpt(), 35, '...' ); } ?></p>
+					</div>
+				</article>
+	<?php endwhile; ?>
+		<article aria-label="spotlight archives">
+			<p class="view-more-link"><a href="<?php echo home_url('/profiletype/'); echo $category_choice;?>">View more Spotlight Profiles <span class="fa fa-chevron-circle-right" aria-hidden="true"></span></a></p>
+		</article>
+	<?php endif; echo $after_widget;
+	
+	}
+
+}
+
+//register widgets
+add_action('widgets_init', 'ksas_register_profile_widgets');
+	function ksas_register_profile_widgets() {
+		register_widget('Profile_Widget');
+	}
+
 ?>
