@@ -1,6 +1,6 @@
 plugin_spotlight_profiles
 =========================
-**Current Version:** 2.1
+**Current Version:** 3.0
 
 Creates a custom post type for profiles.  Link to http://siteurl/profiles/*profiketype-slug* to display profile archive.  Plugin also creates a widget to display a random profile by type in the sidebar. Widget displays thumbnail and pull quote. If no pull quote exists it displays the excerpt.
 
